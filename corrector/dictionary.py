@@ -28,7 +28,7 @@ class Dictionary:
 		dct = {}
 		n = 0
 		vocab_size = 0
-		threshold = 1
+		threshold = 2
 		
 		with open(model_dir + file_name + ".txt", "r", encoding="utf-8") as reader:
 			for line in tqdm(reader.readlines(), desc=file_name):
@@ -152,7 +152,7 @@ class Dictionary:
 	@memo
 	def _p_cont(self, word):
 		try:
-			return float(self.cont_dict_2[word]['after_num'])/self.bi_vocab_size
+			return float(self.cont_dict_2[word]['after_num'])/self.n_bi
 		except KeyError:
 			return 0
 

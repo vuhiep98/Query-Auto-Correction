@@ -62,7 +62,7 @@ class Corrector(Dictionary):
 				include_unknown=False,
 				ignore_token=r'<num>'
 			)],
-			key=lambda x: -self._c1w(x))[:30]
+			key=lambda x: -self._c1w(x))[:20]
 		
 		return new_obs, states
 	
