@@ -55,7 +55,7 @@ class Corrector(Dictionary):
 			elif len(ob)>4 and len(ob)<=10: edit_distance=2
 			elif len(ob)>10: edit_distance=3
 
-			states[ob] = sorted([c.term for c in self.symspell.lookup(
+			states[ob] = [ob] + sorted([c.term for c in self.symspell.lookup(
 				phrase=ob,
 				verbosity=self.verbosity,
 				max_edit_distance=edit_distance,
@@ -68,7 +68,7 @@ class Corrector(Dictionary):
 	
 	def _trans(self, cur, prev, prev_prev=None):
 		if prev_prev is None:
-			return self.cpw(cur, prev)
+			return self.interpolation_cpw(cur, prev)
 		else:
 			return self.cp3w(cur, prev, prev_prev)
 

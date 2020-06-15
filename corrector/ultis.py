@@ -62,4 +62,4 @@ def decode_numbers(text, numbers):
 	return " ".join(new_text)
 
 def preprocess(query):
-	return ' '.join(re.findall(r'<num>|\w+', query))
+	return ' '.join(re.findall(r'<num>|\w+', query.lower()))

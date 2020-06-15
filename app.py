@@ -16,7 +16,7 @@ segmentor = Segmentor()
 corrector = Corrector()
 
 dictionary.load_dict()
-dictionary.create_cont_dict()
+# dictionary.create_cont_dict()
 dictionary.load_diacritic_adder()
 corrector.load_symspell()
 # dictionary.load_context_dict()
@@ -28,8 +28,8 @@ def get_home():
 @app.route('/correct', methods=['POST'])
 def correct():
 	query = request.json.get('query').lower()
-	query = preprocess(query)
 	query, numbers = encode_numbers(query)
+	query = preprocess(query)
 	result = unikey_typos_handler(query)
 	result = segmentor.segment(result)
 	corrected_result = corrector.correct(result)
@@ -43,14 +43,15 @@ def correct():
 
 @app.route('/correct_file')
 def correct_file():
-	inputs = pd.read_csv('temp/testing_file.csv')
+	inputs = pd.read_csv('testing_file.csv')
 	wrong_predict = []
 	results = []
 	for i, row in tqdm(inputs.iterrows()):
 		query = row['query']
-		query, numbers = encode_numbers(query.lower())
+		query, numbers = encode_numbers(query)
+		query = preprocess(query)
 		result = unikey_typos_handler(query)
-		# result = segmentor.segment(result)
+		result = segmentor.segment(result)
 		corrected_result = corrector.correct(result)
 		# diacritic_added_result = diacritic_adder.add_diacritic(result)
 		corrected_result['result'] = decode_numbers(corrected_result['result'], numbers)
@@ -72,13 +73,13 @@ def correct_file():
 	pd.DataFrame(results, columns=['query',
 					               'correct',
 					               'corrected',
-					               'corrected_prob']).to_csv('temp/kneser-ney_correct_result.csv', index=False)
+					               'corrected_prob']).to_csv('data/interpolation_correct_result.csv', index=False)
 	             # 'diacritic_added',
 	             # 'diacritic_added_prob']).to_csv('correct_result.csv', index=False)
 	pd.DataFrame(wrong_predict, columns=['query',
 	             'correct',
 	             'corrected',
-	             'corrected_prob']).to_csv('temp/kneser-ney_wrong_correct_result.csv', index=False)
+	             'corrected_prob']).to_csv('data/interpolation_wrong_correct_result.csv', index=False)
 	
 	             # 'diacritic_added',
 	             # 'diacritic_added_prob']).to_csv('wrong_correct_result.csv', index=False)
