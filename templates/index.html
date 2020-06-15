@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Query Auto Correction</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+		<link type="text/css" href="/static/main.css" rel="stylesheet" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="/static/main.js"></script>
+	</head>
+	<body>
+		<div class="container-sm">
+			<div class="big-title"><h1 align="center">Tự động sửa lỗi chính tả cho truy vấn tìm kiếm</h1></div>
+			<div class="row" id="input-text-box">
+				<input type="text" id="input-query" class="form-control input-group-lg rounded-pill" placeholder="Nhập cụm từ tại đây (Nhấn Enter để sửa lỗi)">
+			</div>
+		</div>
+		<div id="suggestion" class="container-sm">
+			<!-- <div class="d-block">
+				<label class="title"><h3>Corrected</h3></label>
+				<label class="corrected-query" id="corrected-result"></label>
+			</div>
+			<div class="d-block">
+				<label class="title"><h3>Diacritic Added</h3></label>
+				<label class="corrected-query" id="diacritic-added-result"></label>
+			</div>	 -->
+			<label><h3>Kết quả sửa lỗi</h3></label>
+			<label class="corrected-query" id="corrected-result"></label>
+		</div>
+	</body>
+</html>
