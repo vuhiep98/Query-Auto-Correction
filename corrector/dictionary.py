@@ -12,9 +12,9 @@ sys.path.insert(0, dirname(dirname(realpath(__file__))))
 from corrector.ultis import product, memo
 
 
-model_dir="model/new_content/"
-diacritic_adder="model/diacritic_adder.txt"
-context_dict_dir="model/new_content/context_dict.txt"
+model_dir="models/"
+diacritic_adder="models/diacritic_adder.txt"
+context_dict_dir="models/context_dict.txt"
 
 
 class Dictionary:
