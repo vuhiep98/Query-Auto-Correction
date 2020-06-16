@@ -73,8 +73,8 @@ class Corrector(Dictionary):
 			return self.cp3w(cur, prev, prev_prev)
 
 	def _emiss(self, cur_observe, cur_state):
-		return self.words_similarity(cur_observe, cur_state) +\
-				self.pw(cur_state)
+		return 1/2*(self.words_similarity(cur_observe, cur_state) +\
+				self.pw(cur_state))
 
 	def _viterbi_decoder(self, obs, states):
 		V = [{}]

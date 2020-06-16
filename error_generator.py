@@ -1,12 +1,12 @@
 import random, re, json
 import pandas as pd
 
-from corrector.ultis import encode_numbers, decode_numbers
+from corrector.ultis import remove_diacritics
 
 class ErrorGenrator:
 	def __init__(self, error_rate=0.05):
-		self.error_generator_model_dir = 'model/error_generator/'
-		self.qwerty_error_dir = 'model/error_generator/'
+		self.error_generator_model_dir = 'models/error_generator/'
+		self.qwerty_error_dir = 'models/error_generator/'
 		self.key2char, self.char2key = self._get_keyboard_character_transfer(self.error_generator_model_dir + 'keyboard_character_transfer.txt')
 		self.keyboard_typing_dict = self._get_keyboard_typing_error_dict(self.qwerty_error_dir + 'keyboard_typing_error_dict.txt')
 		self.error_rate = error_rate
@@ -82,6 +82,9 @@ class ErrorGenrator:
 				last_index = index
 		return ' '.join(tokens)
 	
+	def _remove_diacritics_wrapper(self, text):
+		return remove_diacritics(text)
+	
 	def test_encode(self, text):
 		print(text)
 		text, numbers = self._encode_num(text)
@@ -93,15 +96,16 @@ class ErrorGenrator:
 		text = self._decode_num(text, numbers)
 		print(text)
 		
-	def error(self, text):
-		text, numbers = self._encode_num(text)
+	def error(self, origin_text):
+		text, numbers = self._encode_num(origin_text)
 		key_chain = self._text2key(text)
 		# print(key_chain)
 		key_chain, error_num = self._generate_typing_error(key_chain)
 		# print(key_chain)
 		text = self._key2text(key_chain)
 		text = self._decode_num(text, numbers)
-		return [text, error_num]
+		non_diacritic_text = self._remove_diacritics_wrapper(origin_text)
+		return [text, non_diacritic_text, error_num]
 
 
 if __name__ == '__main__':
@@ -111,5 +115,8 @@ if __name__ == '__main__':
 	correct_queries = [line.replace('\n', '') for line in open('testing_input.txt', 'r', encoding='utf-8').readlines()]
 	error_queries = [error_generator.error(query) for query in correct_queries]
 
-	pd.DataFrame([[query[0], correct, query[1]] for query, correct in zip(error_queries, correct_queries)], 
-				 columns=['query', 'correct', 'number of errors']).to_csv('testing_file.csv', index=False)
+	testing = []
+	for query, correct in zip(error_queries, correct_queries):
+		testing.append([query[0], correct, query[2]])
+		testing.append([query[1], correct, 0])
+	pd.DataFrame(testing, columns=['query', 'correct', 'number of errors']).to_csv('1400_testing_file.csv', index=False)
