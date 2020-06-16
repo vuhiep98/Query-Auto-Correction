@@ -55,7 +55,7 @@ class Corrector(Dictionary):
 			elif len(ob)>4 and len(ob)<=10: edit_distance=2
 			elif len(ob)>10: edit_distance=3
 
-			states[ob] = sorted([c.term for c in self.symspell.lookup(
+			states[ob] = [ob] + sorted([c.term for c in self.symspell.lookup(
 				phrase=ob,
 				verbosity=self.verbosity,
 				max_edit_distance=edit_distance,
@@ -73,8 +73,8 @@ class Corrector(Dictionary):
 			return self.cp3w(cur, prev, prev_prev)
 
 	def _emiss(self, cur_observe, cur_state):
-		return self.words_similarity(cur_observe, cur_state) +\
-				self.pw(cur_state)
+		return 1/2*(self.words_similarity(cur_observe, cur_state) +\
+				self.pw(cur_state))
 
 	def _viterbi_decoder(self, obs, states):
 		V = [{}]

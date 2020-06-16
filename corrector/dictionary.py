@@ -42,18 +42,6 @@ class Dictionary:
 		return dct, n, vocab_size
 	
 	
-	# @classmethod
-	# def load_symspell(cls):
-	# 	print('Symspell object...')
-	# 	cls.symspell = SymSpell(max_dictionary_edit_distance=3)
-	# 	cls.symspell.load_dictionary(
-	# 		"model/new_content/unigrams.txt",
-	# 		term_index=0,
-	# 		count_index=1,
-	# 		separator=" ",
-	# 		encoding="utf-8"
-	# 	)
-	
 	@classmethod
 	def load_dict(cls):
 		cls.uni_dict, cls.n_uni, cls.uni_vocab_size = cls._from_text(file_name="unigrams")
@@ -69,7 +57,7 @@ class Dictionary:
 				cls.context_dict = json.load(reader)
 			except FileNotFoundError:
 				print("Context dictionary does not exist")
-
+	
 	@classmethod
 	def create_cont_dict(cls):
 		cls.cont_dict_2 = {}
@@ -182,14 +170,6 @@ class Dictionary:
 
 		return first_term + kn_lambda*p_cont
 
-	# @memo
-	# def cp3w(self, cur, prev, prev_prev):
-	# 	delta = self._delta_coeff(cur, prev, prev_prev)
-	# 	prob = delta["1"]*self._p3w(cur, prev, prev_prev) + \
-	# 		   delta["2"]*self.cpw(cur, prev) + \
-	# 		   delta["3"]*self.pw(cur)
-	# 	return prob
-
 	def common_context(self, w_1, w_2):
 		cont_1 = set(self.context_dict.get(w_1, []))
 		cont_2 = set(self.context_dict.get(w_2, []))
@@ -207,6 +187,12 @@ class Dictionary:
 				jaro_winkler.normalized_similarity(w1, w2))
 
 	def p_sentence(self, sentence):
-		tokens = sentence.split()
-		probs = [self.pw(token) for token in tokens]
+		# tokens = sentence.split()
+		probs = [self.pw(token) for token in sentence]
 		return np.prod(probs)
+	
+	def contain_bigram(self, tokens):
+		for i in range(len(tokens)-1):
+			if '_'.join(tokens[i:i+2]) in self.bi_dict:
+				return True
+		return False
