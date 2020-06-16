@@ -5,7 +5,12 @@ function send_request(){
 	xhttp.onreadystatechange = function() { 
 		if (this.readyState == 4 && this.status == 200) {
 			var response = JSON.parse(this.responseText);
-			var result = response['corrected']['result'];
+			if (response['corrected']['prob'] >= response['diacritic_added']['prob']){
+				var result = response['corrected']['result'];
+			}
+			else{
+				var result = response['diacritic_added']['result'];
+			}
 			
 			document.getElementById("corrected-result").innerHTML = "<h3>" + result + "</h3>";
 			document.getElementById("suggestion").style.display = "block";

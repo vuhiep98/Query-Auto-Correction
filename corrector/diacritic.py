@@ -43,8 +43,9 @@ class DiacriticAdder(Dictionary):
 		else:
 			return self.cp3w(cur, prev, prev_prev)
 
-	def _emiss(self, cur, prev):
-		return self.cpw(cur, prev)
+	def _emiss(self, cur_state, cur_observe):
+		return 1/2*(self.words_similarity(cur_observe, cur_state) +\
+				self.pw(cur_state))
 
 	def _viterbi(self, states, obs):
 		V = [{}]
@@ -59,17 +60,10 @@ class DiacriticAdder(Dictionary):
 			new_path = {}
 
 			for st in states[obs[i]]:
-				if i==1:
-					prob, state = max([
-						  (V[i-1][prev_st]*self._trans(st, prev_st)*self._emiss(st, prev_st), prev_st)
-						  for prev_st in states[obs[i-1]]
-					])
-				else:
-					prob, state = max([
-						   (V[i-1][prev_st]*self._trans(st, prev_st, prev_prev_st)*self._emiss(st, prev_st), prev_st)
-						   for prev_st in states[obs[i-1]]
-						   for prev_prev_st in states[obs[i-2]]
-					])
+				prob, state = max([
+						(V[i-1][prev_st]*self._trans(st, prev_st)*self._emiss(obs[i], st), prev_st)
+						for prev_st in states[obs[i-1]]
+				])
 
 				V[i][st] = prob
 				new_path[st] = path[state] + [st]

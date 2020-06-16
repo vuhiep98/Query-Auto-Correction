@@ -107,6 +107,12 @@ class Dictionary:
 				jaro_winkler.normalized_similarity(w1, w2))
 
 	def p_sentence(self, sentence):
-		tokens = sentence.split()
-		probs = [self.pw(token) for token in tokens]
+		# tokens = sentence.split()
+		probs = [self.pw(token) for token in sentence]
 		return np.prod(probs)
+	
+	def contain_bigram(self, tokens):
+		for i in range(len(tokens)-1):
+			if '_'.join(tokens[i:i+2]) in self.bi_dict:
+				return True
+		return False
