@@ -62,4 +62,11 @@ def decode_numbers(text, numbers):
 	return " ".join(new_text)
 
 def preprocess(query):
-	return ' '.join(re.findall(r'<num>|\w+', query.lower()))
+	origin_query = query
+	query, numbers = encode_numbers(origin_query)
+	query = ' '.join(re.findall(r'<num>|\w+', query.lower()))
+	query = unikey_typos_handler(query)
+	return query, numbers
+
+def post_process(query, numbers):
+	return decode_numbers(query, numbers)

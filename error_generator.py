@@ -99,24 +99,8 @@ class ErrorGenrator:
 	def error(self, origin_text):
 		text, numbers = self._encode_num(origin_text)
 		key_chain = self._text2key(text)
-		# print(key_chain)
 		key_chain, error_num = self._generate_typing_error(key_chain)
-		# print(key_chain)
 		text = self._key2text(key_chain)
 		text = self._decode_num(text, numbers)
-		non_diacritic_text = self._remove_diacritics_wrapper(origin_text)
-		return [text, non_diacritic_text, error_num]
-
-
-if __name__ == '__main__':
-	error_generator = ErrorGenrator(error_rate=0.2)
-	# error_generator.test_encode('thông tư số va/đtad-221 ngày 22 tháng 1 năm 2016')
-
-	correct_queries = [line.replace('\n', '') for line in open('testing_input.txt', 'r', encoding='utf-8').readlines()]
-	error_queries = [error_generator.error(query) for query in correct_queries]
-
-	testing = []
-	for query, correct in zip(error_queries, correct_queries):
-		testing.append([query[0], correct, query[2]])
-		testing.append([query[1], correct, 0])
-	pd.DataFrame(testing, columns=['query', 'correct', 'number of errors']).to_csv('1400_testing_file.csv', index=False)
+		non_diacritic = self._remove_diacritics_wrapper(origin_text)
+		return [origin_text, text, non_diacritic, error_num]
