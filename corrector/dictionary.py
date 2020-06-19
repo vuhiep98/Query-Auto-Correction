@@ -57,49 +57,6 @@ class Dictionary:
 				cls.context_dict = json.load(reader)
 			except FileNotFoundError:
 				print("Context dictionary does not exist")
-	
-	@classmethod
-	def create_cont_dict(cls):
-		cls.cont_dict_2 = {}
-		for bi, freq in tqdm(cls.bi_dict.items(), desc='Bigram contianuation'):
-			tokens = bi.split('_')
-
-			if tokens[0] not in cls.cont_dict_2:
-				cls.cont_dict_2[tokens[0]] = {
-					'before': freq,
-					'after': 0,
-					'before_num': 1,
-					'after_num': 0
-				}
-			else:
-				cls.cont_dict_2[tokens[0]]['before'] += freq
-				cls.cont_dict_2[tokens[0]]['before_num'] += 1
-
-			if tokens[1] not in cls.cont_dict_2:
-				cls.cont_dict_2[tokens[1]] = {
-					'before': 0,
-					'after': freq,
-					'before_num': 0,
-					'after_num': 1
-				}
-			else:
-				cls.cont_dict_2[tokens[1]]['after'] += freq
-				cls.cont_dict_2[tokens[1]]['after_num'] += 1
-
-		# cls.cont_dict_3 = {}
-		# for tri, freq in tqdm(cls.tri_dict.items(), desc='Trigram contianuation'):
-		# 	tokens = tri.split('_')
-		# 	phrase = tokens[0] + ' ' + tokens[1]
-
-		# 	if phrase not in cls.cont_dict_3:
-		# 		cls.cont_dict_3[phrase] = freq
-		# 	else:
-		# 		cls.cont_dict_3[phrase] += freq
-
-		# 	if tokens[2] not in cls.cont_dict_3:
-		# 		cls.cont_dict_3[tokens[2]] = freq
-		# 	else:
-		# 		cls.cont_dict_3[tokens[2]] += freq
 
 	@classmethod
 	def load_diacritic_adder(cls):
@@ -124,51 +81,13 @@ class Dictionary:
 		return float(self._c1w(word))/self.n_uni
 
 	@memo
-	def _lambda(self, prev, prev_prev=None):
-		if prev_prev is None:
-			try:
-				return (self._d/self.cont_dict_2[prev]['before'])*self.cont_dict_2[prev]['before_num']
-			except (ZeroDivisionError, KeyError):
-				return 0
-		else:
-			phrase = prev_prev + '_' + prev
-			try:
-				return (self._d/self._c2w(phrase))*self.cont_dict_3[phrase]
-			except (ZeroDivisionError, KeyError):
-				return 0
-
-	@memo
-	def _p_cont(self, word):
-		try:
-			return float(self.cont_dict_2[word]['after_num'])/self.n_bi
-		except KeyError:
-			return 0
-
-	@memo
 	def cpw(self, cur, prev):
-		try:
-			first_term = float(max(self._c2w(prev + '_' +cur) - self._d, 0))/\
-						self._c1w(prev)
-		except ZeroDivisionError:
-			first_term = 0
-
-		kn_lambda = self._lambda(prev)
-		p_cont = self._p_cont(cur)
-
-		return first_term + kn_lambda*p_cont
+		return float(self._c2w(prev + '_' + cur) + self._k)/\
+				(self._c1w(prev) + self._k*self.uni_vocab_size)
 
 	@memo
-	def cp3w(self, cur, prev, prev_prev):
-		try:
-			first_term = float(max(self._c3w(prev_prev + '_' + prev + '_' + cur) - self._d, 0))/\
-						self._c2w(prev_prev + '_' + prev)
-		except ZeroDivisionError:
-			first_term = 0
-
-		kn_lambda = self._lambda(prev, prev_prev)
-		p_cont = self.cpw(cur, prev)
-
-		return first_term + kn_lambda*p_cont
+	def interpolation_cpw(self, cur, prev):
+		return self._lambda*self.cpw(cur, prev) + (1. - self._lambda)*self.pw(prev)
 
 	def common_context(self, w_1, w_2):
 		cont_1 = set(self.context_dict.get(w_1, []))
