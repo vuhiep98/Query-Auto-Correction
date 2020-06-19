@@ -47,7 +47,7 @@ class Dictionary:
 		cls.uni_dict, cls.n_uni, cls.uni_vocab_size = cls._from_text(file_name="unigrams")
 		cls.bi_dict, cls.n_bi, cls.bi_vocab_size = cls._from_text(file_name="bigrams")
 		# cls.tri_dict, cls.n_tri = cls._from_text(file_name="trigrams")
-		cls._d = 0.75
+		cls._k = 0.75
 	
 	@classmethod
 	def load_context_dict(cls):

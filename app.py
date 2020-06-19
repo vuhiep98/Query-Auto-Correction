@@ -16,10 +16,8 @@ segmentor = Segmentor()
 corrector = Corrector()
 
 dictionary.load_dict()
-dictionary.create_cont_dict()
 dictionary.load_diacritic_adder()
 corrector.load_symspell()
-# dictionary.load_context_dict()
 diacritic_adder = DiacriticAdder()
 
 @app.route('/query_auto_correction')
