@@ -32,7 +32,7 @@ def correct():
 	query, numbers = preprocess(origin_query)
 	query = segmentor.segment(query)
 	corrected_result = corrector.correct(query)
-	diacritic_added_result = diacritic_adder.add_diacritic(result)
+	diacritic_added_result = diacritic_adder.add_diacritic(query)
 	corrected_result['result'] = post_process(corrected_result['result'], numbers)
 	diacritic_added_result['result'] = post_process(diacritic_added_result['result'], numbers)
 	return json.dumps({
