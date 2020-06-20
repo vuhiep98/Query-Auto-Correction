@@ -34,7 +34,7 @@ def spelling_errors_auto_generate(correct_query_file):
     return error_queries
 
 
-def auto_correct(error_queries, loop_index):
+def auto_correct(error_queries, loop_index=-1):
     results = []
     for error_query in error_queries:
         query, numbers = preprocess(error_query[0])
@@ -55,24 +55,39 @@ def auto_correct(error_queries, loop_index):
 
         results.append([error_query[0], error_query[1], output_result, output_prob])
 
-    pd.DataFrame(results, columns=['input_query', 'label_query', 'output_query', 'prob']).to_csv(output_dir + 'results_' + str(loop_index) + '.csv', index=False)
+    if loop_index >= 0:
+        pd.DataFrame(results, columns=['input_query', 'label_query', 'output_query', 'prob']).to_csv(output_dir + 'results_' + str(loop_index) + '.csv', index=False)
     return results
 
-def get_results_statistics(results, loop_index):
+def get_results_statistics(results, writer, loop_index=-1):
     right_corrected_queries = [res for res in results if res[1]==res[2]]
     accuracy = float(len(right_corrected_queries))/len(results)*100
-    print('Accuracy Loop {0}: {1:.2f}%'.format(loop_index, accuracy))
+    if loop_index >= 0:
+        writer.write('Accuracy Loop {0}: {1:.2f}%\n'.format(loop_index, accuracy))
     return accuracy
+
+def correct_error_auto_generating_queries(loop):
+    input_file = 'data/testing_input.txt'
+    accuracy = []
+    writer = open(output_dir + 'log_auto_genarating_errors_output.txt', 'w+', encoding='utf-8')
+
+    for loop_index in range(loop):
+        error_queries = spelling_errors_auto_generate(input_file)
+        results = auto_correct(error_queries, loop_index)
+        accuracy.append(get_results_statistics(results, writer, loop_index))
+    writer.write('***********************************\nAverage accuracy: {0:.2f}%'.format(float(sum(accuracy))/len(accuracy)))
+    writer.close()
+
+def correct_non_diacritic_queries():
+    input_file = 'data/700_non_diacritic_errors_file.csv'
+    writer = open(output_dir + 'log_non_diacritic_error_output.txt', 'w+', encoding='utf-8')
+    data = pd.read_csv(input_file).values.tolist()
+    results = auto_correct(data)
+    accuracy = get_results_statistics(results, writer)
+    writer.write('Accuracy: {0:.2f}%\n'.format(accuracy))
+    writer.close()
 
 if __name__ == '__main__':
      
-    loop = 10
-    input_file = 'data/testing_input.txt'
-    accuracy = []
-
-    for index in range(loop):
-        error_queries = spelling_errors_auto_generate(input_file)
-        results = auto_correct(error_queries, index)
-        accuracy.append(get_results_statistics(results, index))
-    
-    print('***********************************\nAverage accuracy: {0:.2f}%'.format(float(sum(accuracy))/len(accuracy)))
+    correct_non_diacritic_queries()
+    # correct_error_auto_generating_queries(loop=10)
