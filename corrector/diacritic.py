@@ -37,11 +37,8 @@ class DiacriticAdder(Dictionary):
 			states[ob] = self._gen_cand(ob)
 		return states
 
-	def _trans(self, cur, prev, prev_prev=None):
-		if prev_prev is None:
-			return self.cpw(cur, prev)
-		else:
-			return self.cp3w(cur, prev, prev_prev)
+	def _trans(self, cur, prev):
+		return self.interpolation_cpw(cur, prev)
 
 	def _emiss(self, cur_state, cur_observe):
 		return 1/2*(self.words_similarity(cur_observe, cur_state) +\

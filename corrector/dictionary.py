@@ -47,7 +47,11 @@ class Dictionary:
 		cls.uni_dict, cls.n_uni, cls.uni_vocab_size = cls._from_text(file_name="unigrams")
 		cls.bi_dict, cls.n_bi, cls.bi_vocab_size = cls._from_text(file_name="bigrams")
 		# cls.tri_dict, cls.n_tri = cls._from_text(file_name="trigrams")
-		cls._k = 0.75
+
+	@classmethod
+	def load_params(cls, params):
+		cls._k = params[0]
+		cls._interpolation_lambda = params[1]
 	
 	@classmethod
 	def load_context_dict(cls):
@@ -57,7 +61,7 @@ class Dictionary:
 				cls.context_dict = json.load(reader)
 			except FileNotFoundError:
 				print("Context dictionary does not exist")
-
+	
 	@classmethod
 	def load_diacritic_adder(cls):
 		print('Diacritic adder...')
@@ -82,12 +86,13 @@ class Dictionary:
 
 	@memo
 	def cpw(self, cur, prev):
-		return float(self._c2w(prev + '_' + cur) + self._k)/\
-				(self._c1w(prev) + self._k*self.uni_vocab_size)
+		return (self._c2w(prev + '_' + cur) + self._k)/\
+			(self._c1w(prev) + self._k*self.uni_vocab_size)
 
 	@memo
 	def interpolation_cpw(self, cur, prev):
-		return self._lambda*self.cpw(cur, prev) + (1. - self._lambda)*self.pw(prev)
+		return self._interpolation_lambda*self.cpw(cur, prev) + \
+			(1. - self._interpolation_lambda)*self.pw(prev)
 
 	def common_context(self, w_1, w_2):
 		cont_1 = set(self.context_dict.get(w_1, []))

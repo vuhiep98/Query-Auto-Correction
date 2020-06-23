@@ -15,6 +15,7 @@ class Corrector(Dictionary):
 	def __init__(self):
 		self.verbosity = Verbosity.ALL
 		self.symspell = SymSpell(max_dictionary_edit_distance=3, count_threshold=0)
+		self.spelling_error_threshold = 0.001
 
 	def load_symspell(self):
 		for k,v in tqdm(self.uni_dict.items(), 'Loading symspell...'):
@@ -41,21 +42,51 @@ class Corrector(Dictionary):
 		cands = list(set(self._gen_word_candidates(term)))
 		cands = sorted(cands, key=lambda x: -self._c1w(x))[:min(10, len(cands))]
 		return cands
+	
+	def _spell_checking(self, prev, cur, nex):
+		prob = 0.
+		if prev is None:
+			prob = self.cpw(nex, cur)
+		elif nex is None:
+			prob = self.cpw(cur, prev)
+		else:
+			prob = self.cpw(cur, prev) * self.cpw(nex, cur)
+		
+		return prob >= self.spelling_error_threshold
 
 	def gen_states(self, obs):
 		states = {}
 		new_obs = []
-		for ob in obs:
+
+		if len(obs) == 0:
+			return new_obs, states
+
+		if len(obs) == 1:
+			states[obs[0]] = [obs[0]]
+			return obs, states
+		
+		for index, ob in enumerate(obs):
 			states[ob] = []
 			if len(ob)==1 and re.match(r"[^aáàảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoóòỏõọôồổỗộơờớởỡợuùúũụưứửữựyỳýỷỹỵ]", ob):
 				continue
+
 			new_obs += [ob]
+			states[ob] = [ob]
+
+			if index == 0:
+				if self._spell_checking(prev=None, cur=ob, nex=obs[index+1]):
+					continue
+			elif index == len(obs)-1:
+				if self._spell_checking(prev=obs[index-1], cur=ob, nex=None):
+					continue
+			elif self._spell_checking(obs[index-1], ob, obs[index+1]):
+				continue
 
 			if len(ob)<=4: edit_distance=1
 			elif len(ob)>4 and len(ob)<=10: edit_distance=2
 			elif len(ob)>10: edit_distance=3
 
-			states[ob] = [ob] + sorted([c.term for c in self.symspell.lookup(
+			states[ob] += sorted([c.term for c in self.symspell.lookup(
 				phrase=ob,
 				verbosity=self.verbosity,
 				max_edit_distance=edit_distance,
@@ -63,14 +94,11 @@ class Corrector(Dictionary):
 				ignore_token=r'<num>'
 			)],
 			key=lambda x: -self._c1w(x))[:20]
-		
+			# print('{0}: {1}'.format(ob, str(states[ob])))
 		return new_obs, states
 	
-	def _trans(self, cur, prev, prev_prev=None):
-		if prev_prev is None:
-			return self.cpw(cur, prev)
-		else:
-			return self.cp3w(cur, prev, prev_prev)
+	def _trans(self, cur, prev):
+		return self.interpolation_cpw(cur, prev)
 
 	def _emiss(self, cur_observe, cur_state):
 		return 1/2*(self.words_similarity(cur_observe, cur_state) +\
@@ -125,3 +153,6 @@ class Corrector(Dictionary):
 		result = self._viterbi_decoder(obs, states)
 		# return [" ".join(r[1:-1]) for r in result]
 		return result
+	
+	def test(self):
+		print(self.interpolation_cpw('mại', 'thương'))
