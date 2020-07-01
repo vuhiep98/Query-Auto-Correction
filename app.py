@@ -11,14 +11,18 @@ from corrector.ultis import preprocess, post_process
 
 app = Flask(__name__, static_folder='static')
 
+interpolation_lambda = 1.0
+
 dictionary = Dictionary()
 segmentor = Segmentor()
 corrector = Corrector()
 
 dictionary.load_dict()
 dictionary.load_diacritic_adder()
+dictionary.load_params([1, interpolation_lambda])
 corrector.load_symspell()
 diacritic_adder = DiacriticAdder()
+
 
 @app.route('/query_auto_correction')
 def get_home():

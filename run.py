@@ -28,6 +28,8 @@ def load_model(interpolation_lambda=1.):
 
     return segmentor, corrector, diacritic_adder
 
+segmentor, corrector, diacritic_adder = load_model(interpolation_lambda=1.)
+
 def spelling_errors_auto_generate(correct_query_file):
     error_queries = []
     with open(correct_query_file, 'r', encoding='utf-8') as reader:
@@ -69,15 +71,16 @@ def get_results_statistics(results, writer, loop_index=-1):
     return accuracy
 
 def correct_error_auto_generating_queries(loop):
-    input_file = 'data/testing_input.txt'
+    # input_file = 'data/testing_input.txt'
     accuracy = []
     writer = open(output_dir + 'log_auto_genarating_errors_output.txt', 'w+', encoding='utf-8')
 
-    segmentor, corrector, diacritic_adder = load_model(interpolation_lambda=1.)
+    # segmentor, corrector, diacritic_adder = load_model(interpolation_lambda=1.)
 
     for loop_index in range(loop):
-        error_queries = spelling_errors_auto_generate(input_file)
-        results = auto_correct(error_queries, segmentor, corrector, diacritic_adder)
+        # error_queries = spelling_errors_auto_generate(input_file)
+        data = pd.read_csv('data/error_auto_generated_queries/' + str(loop_index) + '.csv').values.tolist()
+        results = auto_correct(data, segmentor, corrector, diacritic_adder)
         accuracy.append(get_results_statistics(results, writer, loop_index))
     average_accuracy = float(sum(accuracy))/len(accuracy)
     writer.write('***********************************\nAverage accuracy: {0:.2f}%'.format(average_accuracy))
