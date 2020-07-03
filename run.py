@@ -8,7 +8,7 @@ from corrector.diacritic import DiacriticAdder
 from corrector.ultis import *
 from error_generator import ErrorGenrator
 
-error_generator = ErrorGenrator()
+error_generator = ErrorGenrator(error_rate=0.05)
 
 dictionary = Dictionary()
 dictionary.load_dict()
@@ -36,7 +36,7 @@ def spelling_errors_auto_generate(correct_query_file):
 
 def auto_correct(error_queries, loop_index=-1):
     results = []
-    for error_query in error_queries:
+    for error_query in tqdm(error_queries):
         query, numbers = preprocess(error_query[0])
         segmented_query = segmentor.segment(query)
 
@@ -66,14 +66,13 @@ def get_results_statistics(results, writer, loop_index=-1):
         writer.write('Accuracy Loop {0}: {1:.2f}%\n'.format(loop_index, accuracy))
     return accuracy
 
-def correct_error_auto_generating_queries(loop):
-    input_file = 'data/testing_input.txt'
+def correct_error_auto_generating_queries(start_loop, end_loop):
     accuracy = []
     writer = open(output_dir + 'log_auto_genarating_errors_output.txt', 'w+', encoding='utf-8')
 
-    for loop_index in range(loop):
-        error_queries = spelling_errors_auto_generate(input_file)
-        results = auto_correct(error_queries, loop_index)
+    for loop_index in range(start_loop, end_loop):
+        data = pd.read_csv('data/error_auto_generated_queries/' + str(loop_index) + '.csv').values.tolist()
+        results = auto_correct(data, loop_index)
         accuracy.append(get_results_statistics(results, writer, loop_index))
     writer.write('***********************************\nAverage accuracy: {0:.2f}%'.format(float(sum(accuracy))/len(accuracy)))
     writer.close()
@@ -88,6 +87,6 @@ def correct_non_diacritic_queries():
     writer.close()
 
 if __name__ == '__main__':
-     
+    
     correct_non_diacritic_queries()
-    # correct_error_auto_generating_queries(loop=10)
+    correct_error_auto_generating_queries(start_loop=5, end_loop=10)
