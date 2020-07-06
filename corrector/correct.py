@@ -21,28 +21,6 @@ class Corrector(Dictionary):
 		for k,v in tqdm(self.uni_dict.items(), 'Loading symspell...'):
 			self.symspell.create_dictionary_entry(key=k, count=v)
 
-	def _gen_character_candidates(self, character):
-		for line in self.diacritic:
-			if character in line:
-				return line
-		return [character]
-
-	def _gen_word_candidates(self, word):
-		cands = [word]
-		for i in range(len(word)):
-			can_list = self._gen_character_candidates(word[i])
-			cands += [word[:i] + c + rest
-						for c in can_list
-						for rest in self._gen_word_candidates(word[i+1:])]
-		return cands
-
-	def _gen_diacritic_candidates(self, term):
-		if term == '<num>':
-			return [term]
-		cands = list(set(self._gen_word_candidates(term)))
-		cands = sorted(cands, key=lambda x: -self._c1w(x))[:min(10, len(cands))]
-		return cands
-	
 	def _spell_checking(self, prev, cur, nex):
 		prob = 0.
 		if prev is None:
@@ -94,7 +72,6 @@ class Corrector(Dictionary):
 				ignore_token=r'<num>'
 			)],
 			key=lambda x: -self._c1w(x))[:20]
-			# print('{0}: {1}'.format(ob, str(states[ob])))
 		return new_obs, states
 	
 	def _trans(self, cur, prev):
@@ -117,26 +94,16 @@ class Corrector(Dictionary):
 			new_path = {}
 
 			for st in states[obs[i]]:
-				# if i==1:
 				prob, state = max([
 					(V[i-1][prev_st]*self._trans(st, prev_st)*self._emiss(obs[i], st), prev_st)
 					for prev_st in states[obs[i-1]]
 				])
-
-				# else:
-				# 	prob, state = max([
-				# 		(V[i-1][prev_st]*self._trans(st, prev_st, prev_prev_st)*self._emiss(obs[i], st), prev_st)
-				# 		for prev_st in states[obs[i-1]]
-				# 		for prev_prev_st in states[obs[i-2]]
-				# 	])
-
 				V[i][st] = prob
 				new_path[st] = path[state] + [st]
 
 			path = new_path
 
 		with open('data/viterbi_tracking.txt', 'w+', encoding='utf-8') as writer:
-			# writer.write(json.dumps(path, indent=4, ensure_ascii=False) + '\n')
 			writer.write(json.dumps(V, indent=4, ensure_ascii=False) + '\n')
 
 		prob, state = max([(V[-1][st], st) for st in states[obs[-1]]])
@@ -147,12 +114,8 @@ class Corrector(Dictionary):
 		}
 
 	def correct(self, text):
-		# obs = ['<START>'] + text.split() + ['<END>']
 		obs = text.split()
 		obs, states = self.gen_states(obs)
 		result = self._viterbi_decoder(obs, states)
-		# return [" ".join(r[1:-1]) for r in result]
 		return result
-	
-	def test(self):
-		print(self.interpolation_cpw('mại', 'thương'))
+

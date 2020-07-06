@@ -7,16 +7,17 @@ function send_request(){
 			var response = JSON.parse(this.responseText);
 			if (response['corrected']['prob'] >= response['diacritic_added']['prob']){
 				var result = response['corrected']['result'];
+				console.log(response['corrected']['result']);
+				console.log(response['corrected']['prob']);
 			}
 			else{
 				var result = response['diacritic_added']['result'];
+				console.log(response['diacritic_added']['result']);
+				console.log(response['diacritic_added']['prob']);
 			}
 			
 			document.getElementById("corrected-result").innerHTML = "<h3>" + result + "</h3>";
 			document.getElementById("suggestion").style.display = "block";
-			
-			console.log(response['corrected']['result']);
-			console.log(response['corrected']['prob']);
 		}
 	};
 	xhttp.open("POST", "/correct", true);
